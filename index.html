@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vintage Morse Code Intercom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap');
+
+        body {
+            /* Textured wall background */
+            background-color: #d8cebc;
+            background-image: 
+                radial-gradient(#c4b7a1 1px, transparent 1px),
+                radial-gradient(#c4b7a1 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            font-family: 'Courier Prime', monospace;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .intercom-panel {
+            /* Vintage bronze/brass metallic look */
+            background: linear-gradient(135deg, #a48665 0%, #836746 40%, #6b513b 100%);
+            box-shadow: 
+                inset 2px 2px 5px rgba(255, 255, 255, 0.2),
+                inset -3px -3px 10px rgba(0, 0, 0, 0.6),
+                10px 15px 25px rgba(0, 0, 0, 0.5),
+                0 0 0 4px #4a3625; /* Outer rim */
+            border-radius: 16px;
+            position: relative;
+            padding: 30px;
+            width: 280px;
+            height: 440px;
+        }
+
+        /* Weathering details */
+        .intercom-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.15"/></svg>');
+            pointer-events: none;
+            border-radius: 16px;
+        }
+
+        .screw {
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #5a4634, #2a1f15);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .screw::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 2px;
+            width: 8px;
+            height: 2px;
+            background-color: #111;
+            transform: rotate(45deg);
+        }
+
+        .screw-tl { top: 12px; left: 12px; }
+        .screw-tr { top: 12px; right: 12px; transform: rotate(20deg); }
+        .screw-bl { bottom: 12px; left: 12px; transform: rotate(-30deg); }
+        .screw-br { bottom: 12px; right: 12px; transform: rotate(70deg); }
+
+        .speaker-grill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .speaker-slot {
+            height: 6px;
+            background: #221811;
+            border-radius: 10px;
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
+        }
+
+        .led {
+            width: 14px;
+            height: 14px;
+            background-color: #4a0000;
+            border-radius: 50%;
+            border: 2px solid #2a1f15;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.2);
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            transition: background-color 0.05s, box-shadow 0.05s;
+        }
+
+        .led.on {
+            background-color: #ff3333;
+            box-shadow: 
+                0 0 10px #ff0000, 
+                0 0 20px #ff0000, 
+                inset 0 0 5px #ffffff;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 0 10px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .key-btn {
+            background: linear-gradient(180deg, #b0916d 0%, #8e7052 100%);
+            border: none;
+            border-radius: 6px;
+            color: #3b2a1a;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.2);
+            height: 55px;
+            box-shadow: 
+                inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.4),
+                2px 4px 6px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .key-btn:active, .key-btn.active {
+            transform: translateY(3px);
+            box-shadow: 
+                inset 1px 1px 4px rgba(0, 0, 0, 0.6),
+                0 1px 1px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(180deg, #8e7052 0%, #765a40 100%);
+        }
+
+        .key-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="intercom-panel">
+        <!-- Corner Screws -->
+        <div class="screw screw-tl"></div>
+        <div class="screw screw-tr"></div>
+        <div class="screw screw-bl"></div>
+        <div class="screw screw-br"></div>
+
+        <!-- LED Indicator -->
+        <div id="led-indicator" class="led"></div>
+
+        <!-- Speaker Slots -->
+        <div class="speaker-grill">
+            <div class="speaker-slot w-16"></div>
+            <div class="speaker-slot w-24"></div>
+            <div class="speaker-slot w-32"></div>
+            <div class="speaker-slot w-40"></div>
+            <div class="speaker-slot w-48"></div>
+            <div class="speaker-slot w-48"></div>
+            <div class="speaker-slot w-40"></div>
+            <div class="speaker-slot w-32"></div>
+            <div class="speaker-slot w-24"></div>
+            <div class="speaker-slot w-16"></div>
+        </div>
+
+        <!-- Keypad -->
+        <div class="keypad">
+            <button class="key-btn" data-key="1">1</button>
+            <button class="key-btn" data-key="2">2</button>
+            <button class="key-btn" data-key="3">3</button>
+            <button class="key-btn" data-key="4">4</button>
+            <button class="key-btn" data-key="5">5</button>
+            <button class="key-btn" data-key="6">6</button>
+            <button class="key-btn" data-key="7">7</button>
+            <button class="key-btn" data-key="8">8</button>
+            <button class="key-btn" data-key="#">#</button>
+        </div>
+    </div>
+
+    <script>
+        const led = document.getElementById('led-indicator');
+        const buttons = document.querySelectorAll('.key-btn');
+        let isPlaying = false;
+
+        // Morse code configuration
+        const DOT_DURATION = 200; // ms
+        const DASH_DURATION = 600; // ms
+        const GAP_DURATION = 200; // ms
+
+        // Map buttons to Morse code sequences (true = short/dot, false = long/dash)
+        const morseMap = {
+            '1': [true, true],             // I
+            '2': [false, true],            // N
+            '3': [false],                  // T
+            '4': [true, true, true, true], // H
+            '5': [true],                   // E
+            '6': [false, true, true],      // D
+            '7': [true],                   // E
+            '8': [false, true],            // N
+            '#': []                        // None
+        };
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function playMorseCode(key) {
+            if (isPlaying) return; // Prevent overlapping
+            
+            const sequence = morseMap[key];
+            if (!sequence || sequence.length === 0) return;
+
+            isPlaying = true;
+            disableButtons(true);
+
+            // Wait a small delay before starting the blink sequence
+            await wait(300);
+
+            for (let i = 0; i < sequence.length; i++) {
+                const isDot = sequence[i];
+                const duration = isDot ? DOT_DURATION : DASH_DURATION;
+
+                // Turn LED ON
+                led.classList.add('on');
+                await wait(duration);
+
+                // Turn LED OFF
+                led.classList.remove('on');
+                
+                // Gap between blinks (except after the last one)
+                if (i < sequence.length - 1) {
+                    await wait(GAP_DURATION);
+                }
+            }
+
+            isPlaying = false;
+            disableButtons(false);
+        }
+
+        function disableButtons(disabled) {
+            buttons.forEach(btn => {
+                btn.disabled = disabled;
+            });
+        }
+
+        // Attach event listeners
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Add a quick visual feedback for the click itself if disabled styling handles it
+                playMorseCode(btn.dataset.key);
+            });
+        });
+    </script>
+</body>
+</html>
